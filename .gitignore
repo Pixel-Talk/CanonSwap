@@ -1,0 +1,34 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+**/__pycache__/
+*.py[cod]
+**/*.py[cod]
+*$py.class
+
+# Model weights
+**/*.pth
+**/*.onnx
+
+# Exclude large folders
+assets/
+pretrained_weights/
+animations/
+
+# Ipython notebook
+*.ipynb
+
+# Temporary files or benchmark resources
+tmp/*
+.vscode/launch.json
+**/*.DS_Store
+gradio_temp/**
+
+# Windows dependencies
+ffmpeg/
+LivePortrait_env/
+extract_weights.py
+
+# XPose build files
+src/utils/dependencies/XPose/models/UniPose/ops/build
+src/utils/dependencies/XPose/models/UniPose/ops/dist
+src/utils/dependencies/XPose/models/UniPose/ops/MultiScaleDeformableAttention.egg-info
