@@ -36,8 +36,8 @@ Extract both models to `./pretrained_weights/insightface/models` with the follow
 │   ├── glintr100.onnx
 │   └── scrfd_10g_bnkps.onnx
 └── buffalo_l/
-├── 2d106det.onnx
-└── det_10g.onnx
+│   ├── 2d106det.onnx
+│   └── det_10g.onnx
 ```
 
 
@@ -69,7 +69,7 @@ CanonSwap/
 ```
 
 ## Inference
-
+The first inference run will automatically download the face parsing model.
 ### Face Swapping
 ```bash
 python inference_canswap.py -s <source_image_path> -t <target_video/image_path>
