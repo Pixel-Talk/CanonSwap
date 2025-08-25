@@ -48,12 +48,11 @@ class CanSwapPipeline(object):
         # visualizer_params={"kp_size": 5, "draw_border": True, "colormap": "gist_rainbow"}
         # self.visualizer = Visualizer(**visualizer_params)
 
-        self.image_processor = SegformerImageProcessor.from_pretrained("jonathandinu/face-parsing", local_files_only=True)
-        self.model = SegformerForSemanticSegmentation.from_pretrained("jonathandinu/face-parsing", local_files_only=True).to(self.can_swapper.device)
+        self.image_processor = SegformerImageProcessor.from_pretrained("pretrained_weights/parsing", local_files_only=True)
+        self.model = SegformerForSemanticSegmentation.from_pretrained("pretrained_weights/parsing",local_files_only=True).to(self.can_swapper.device)
         self.valid_list = [1, 2, 4, 5, 6, 7, 10, 11, 12]
         self.valid_list = torch.tensor(self.valid_list, device=self.can_swapper.device)
 
-        #对source图片预处理网络
         self.cropper_insightface = Face_detect_crop(name='antelope', root='pretrained_weights/insightface/models')
         self.cropper_insightface.prepare(ctx_id=0, det_thresh=0.5, det_size=(640,640), mode='None')
 

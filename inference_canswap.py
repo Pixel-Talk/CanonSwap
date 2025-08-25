@@ -49,9 +49,7 @@ def main():
     # specify configs for inference
     inference_cfg = partial_fields(InferenceConfig, args.__dict__)
     crop_cfg = partial_fields(CropConfig, args.__dict__)
-    # print(inference_cfg.flag_lip_retargeting)
-    # exit()
-    # random.seed(3)
+
     np.random.seed(1)
     torch.manual_seed(1)
     torch.cuda.manual_seed_all(1)

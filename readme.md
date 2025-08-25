@@ -44,6 +44,10 @@ Extract both models to `./pretrained_weights/insightface/models` with the follow
 ### 3. ArcFace
 Download ArcFace from [here](https://drive.google.com/file/d/1lDpbmvc7__cIfWU9rTTKNW5OXeeqohUJ/view?usp=drive_link) and extract to `./pretrained_weights` folder.
 
+### 4. Landmark Model
+Download Landmark Model from [here](https://drive.google.com/file/d/1uuee7ebWr9lBYfCmIPk8c4fk_YDbiNHz/view?usp=drive_link) and extract to `./pretrained_weights` folder.
+
+
 ## Project Structure After Download
 
 After downloading all models, your project structure should look like:
@@ -53,6 +57,7 @@ CanonSwap/
 ├── pretrained_weights/
 │   ├── combined_weights.pth
 │   ├── arcface_checkpoint.tar
+│   ├── landmark.onnx
 │   └── insightface/
 │       └── models/
 │           ├── antelope/

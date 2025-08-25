@@ -9,12 +9,6 @@ from skimage.draw import disk
 
 import matplotlib.pyplot as plt
 import collections
-# from facevid2vid.distributed import master_only, master_only_print, get_rank, is_master
-# from facevid2vid.models import Discriminator
-# from facevid2vid.trainer import GeneratorFull3 as GeneratorFull
-# from facevid2vid.trainer import DiscriminatorFull2 as DiscriminatorFull
-# from facevid2vid.models import MultiScaleDiscriminator_wokp as Discriminator
-# from facevid2vid.trainer import DiscriminatorFull_wokp_multi as DiscriminatorFull
 from torch.optim.lr_scheduler import StepLR
 from tqdm import tqdm
 
@@ -24,15 +18,11 @@ from src.modules.spade_generator import SPADEDecoder
 from src.modules.warping_network import WarpingNetwork
 from src.modules.motion_extractor import MotionExtractor
 from src.modules.appearance_feature_extractor import AppearanceFeatureExtractor
-from src.modules.stitching_retargeting_network import StitchingRetargetingNetwork
-from src.utils.helper import remove_ddp_dumplicate_key, add_ddp_prefix
 
-# from src.modules.modulate import transfer_model
+
 from src.modules.adaptive_modulate import transfer_model
 from src.modules.adaptive_modulate import transfer_model2 as transfer_model_big
 from src.modules.adaptive_modulate import G3d
-# from src.modules.resnet_adain import transfer_model
-# from src.modules.distangle import AttributeEncoder, IdentityEncoder, Decoder
 
 from .utils.timer import Timer
 from .utils.helper import load_model, concat_feat
@@ -95,7 +85,6 @@ class can_swapper(object):
         self.netArc.eval()
 
     def load_cpk(self):
-        # 优先尝试加载合并权重文件
         combined_weights_path = "pretrained_weights/combined_weights.pth"
 
         if os.path.exists(combined_weights_path):
@@ -292,41 +281,7 @@ class can_swapper(object):
 
         return delta.reshape(-1, kp_source.shape[1], 3)
 
-    def stitch(self, kp_source: torch.Tensor, kp_driving: torch.Tensor) -> torch.Tensor:
-        """
-        kp_source: BxNx3
-        kp_driving: BxNx3
-        Return: Bx(3*num_kp+2)
-        """
-        feat_stiching = concat_feat(kp_source, kp_driving)
 
-        with torch.no_grad():
-            delta = self.stitching_retargeting_module['stitching'](feat_stiching)
-
-        return delta
-
-    def stitching(self, kp_source: torch.Tensor, kp_driving: torch.Tensor) -> torch.Tensor:
-        """ conduct the stitching
-        kp_source: Bxnum_kpx3
-        kp_driving: Bxnum_kpx3
-        """
-
-        if self.stitching_retargeting_module is not None:
-
-            bs, num_kp = kp_source.shape[:2]
-
-            kp_driving_new = kp_driving.clone()
-            delta = self.stitch(kp_source, kp_driving_new)
-
-            delta_exp = delta[..., :3*num_kp].reshape(bs, num_kp, 3)  # 1x20x3
-            delta_tx_ty = delta[..., 3*num_kp:3*num_kp+2].reshape(bs, 1, 2)  # 1x1x2
-
-            kp_driving_new += delta_exp
-            kp_driving_new[..., :2] += delta_tx_ty
-
-            return kp_driving_new
-
-        return kp_driving
 
     def warp_decode(self, feature_3d: torch.Tensor, kp_source: torch.Tensor, kp_driving: torch.Tensor) -> torch.Tensor:
         """ get the image after the warping of the implicit keypoints
@@ -391,295 +346,3 @@ class can_swapper(object):
         # [c_s,lip, c_d,lip,i]
         combined_lip_ratio_tensor = torch.cat([c_s_lip_tensor, c_d_lip_i_tensor], dim=1) # 1x2
         return combined_lip_ratio_tensor
-
-# class can_swapper:
-#     def __init__(
-#         self,
-#         visualizer_params={"kp_size": 5, "draw_border": True, "colormap": "gist_rainbow"},
-#     ):
-
-#         self.visualizer = Visualizer(**visualizer_params)
-#         self.epoch = 0
-#         self.steps = 0
-#         self.best_loss = float("inf")
-#         model_config = yaml.load(open('src/config/models.yaml', 'r'), Loader=yaml.SafeLoader)['model_params']
-
-#         self.g_models = {"afe": AppearanceFeatureExtractor(**model_config['appearance_feature_extractor_params']), "me": MotionExtractor(**model_config['motion_extractor_params']),
-#                          "wm": WarpingNetwork(**model_config['warping_module_params']), "generator": SPADEDecoder(**model_config['spade_generator_params']),
-#                          "sm": StitchingRetargetingNetwork(**model_config['stitching_retargeting_module_params']["stitching"])}
-#         # self.load_init_models()
-#         # self.g_models = {"me": MotionExtractor(**model_config['motion_extractor_params']),
-#         #                  "wm": WarpingNetwork(**model_config['warping_module_params']), "generator": SPADEDecoder(**model_config['spade_generator_params'])}
-
-#         self.dis_models = {"transfer": transfer_model()}
-
-#         # 遍历每个模型并统计总参数量
-#         for name, model in self.g_models.items():
-#             total_params = sum(p.numel() for p in model.parameters())
-#             print(f"Model {name} has {total_params:,} total parameters.")
-#         for name, model in self.dis_models.items():
-#             total_params = sum(p.numel() for p in model.parameters())
-#             print(f"Model {name} has {total_params:,} total parameters.")
-
-#         self.g_full = GeneratorFull(**self.g_models, **self.dis_models, **self.d_models)
-#         self.d_full = DiscriminatorFull(**self.d_models)
-#         self.g_loss_names, self.d_loss_names = None, None
-#         self.dataloader = dataloader
-#         ##锁住g_models
-#         for name, model in self.g_models.items():
-#             model.eval()
-#             for param in model.parameters():
-#                 param.requires_grad = False
-#         #设置dis_models的优化器
-#         for name, model in self.dis_models.items():
-#             model.train()
-#             for param in model.parameters():
-#                 param.requires_grad = True
-#         #设置d_models的优化器
-#         for name, model in self.d_models.items():
-#             model.train()
-#             for param in model.parameters():
-#                 param.requires_grad = True
-
-#     def __del__(self):
-#         self.save_cpk()
-#         if is_master():
-#             self.log_file.close()
-
-#     @master_only
-#     def log_scores(self):
-#         loss_mean = np.array(self.g_losses).mean(axis=0)
-#         loss_string = "; ".join(["%s - %.5f" % (name, value) for name, value in zip(self.g_loss_names, loss_mean)])
-#         loss_string = "G" + str(self.steps).zfill(self.zfill_num) + ") " + loss_string
-#         print(loss_string, file=self.log_file)
-#         self.g_losses = []
-#         loss_mean = np.array(self.d_losses).mean(axis=0)
-#         loss_string = "; ".join(["%s - %.5f" % (name, value) for name, value in zip(self.d_loss_names, loss_mean)])
-#         loss_string = "D" + str(self.steps).zfill(self.zfill_num) + ") " + loss_string
-#         print(loss_string, file=self.log_file)
-#         self.d_losses = []
-#         # 记录生成器学习率
-#         for name, optimizer in self.g_optimizers.items():
-#             lr = optimizer.param_groups[0]['lr']
-#             lr_string = f"LR (G-{name}): {lr:.6f}"
-#             print(lr_string, file=self.log_file)
-#         # 记录判别器学习率
-#         for name, optimizer in self.d_optimizers.items():
-#             lr = optimizer.param_groups[0]['lr']
-#             lr_string = f"LR (D-{name}): {lr:.6f}"
-#             print(lr_string, file=self.log_file)
-#         self.log_file.flush()
-
-#     @master_only
-#     def visualize_rec(self, s, d, generated_d, transformed_d, kp_s, kp_d, transformed_kp, occlusion):
-#         image = self.visualizer.visualize(s, d, generated_d, transformed_d, kp_s, kp_d, transformed_kp, occlusion)
-#         imageio.imsave(os.path.join(self.vis_dir, "%s-rec.png" % str(self.epoch).zfill(self.zfill_num)), image)
-
-#     @master_only
-#     def visualize_swap(self, result, mask=None):
-#         image = self.visualizer.visualize_swap(result, mask)
-#         imageio.imsave(os.path.join(self.vis_dir, "%s-swap.png" % str(self.steps).zfill(self.zfill_num)), image)
-
-
-
-
-#     def load_cpk(self, epoch):
-#         ckp_path = os.path.join(self.ckp_dir, "%s-checkpoint.pth.tar" % str(epoch).zfill(self.zfill_num))
-#         checkpoint = torch.load(ckp_path, map_location=torch.device("cpu"))
-#         for k, v in self.g_models.items():
-#             v.module.load_state_dict(checkpoint[k])
-#         for k, v in self.dis_models.items():
-#             v.module.load_state_dict(checkpoint[k])
-
-#     @master_only
-#     def log_iter(self, g_losses, d_losses):
-#         g_losses = collections.OrderedDict(g_losses.items())
-#         d_losses = collections.OrderedDict(d_losses.items())
-#         if self.g_loss_names is None:
-#             self.g_loss_names = list(g_losses.keys())
-#         if self.d_loss_names is None:
-#             self.d_loss_names = list(d_losses.keys())
-#         self.g_losses.append(list(g_losses.values()))
-#         self.d_losses.append(list(d_losses.values()))
-
-#     @master_only
-#     def log_times(self, result, mask=None):
-#         self.log_scores()
-#         self.visualize_swap(result, mask)
-
-#     @master_only
-#     def save_check(self):
-#         if (self.epoch + 1) % self.checkpoint_freq == 0 and self.epoch != 0:
-#             self.save_cpk()
-
-#     def step(self):
-#         master_only_print("Epoch", self.epoch)
-#         with tqdm(total=len(self.dataloader.dataset)) as progress_bar:
-#             # print('1')
-#             for d, M, d_c, M_c, d_id, M_id, flag, swap_res, mask_gt in self.dataloader:
-#                 # print('2')
-#                 d = d.cuda(non_blocking=True)
-#                 M = M.cuda(non_blocking=True)
-#                 d_c = d_c.cuda(non_blocking=True)
-#                 M_c = M_c.cuda(non_blocking=True)
-#                 d_id = d_id.cuda(non_blocking=True)
-#                 M_id = M_id.cuda(non_blocking=True)
-#                 swap_res = swap_res.cuda(non_blocking=True)
-#                 mask_gt = mask_gt.cuda(non_blocking=True)
-#                 for optimizer in self.g_optimizers.values():
-#                     optimizer.zero_grad()
-#                 losses_g, swap_canonical, swap_origin, x_can, x_ori, swap_origin_re, mask = self.g_full(d, M, d_c, M_c, d_id, M_id, flag, swap_res, mask_gt)
-#                 loss_g = sum(losses_g.values())
-#                 loss_g.backward()
-#                 # loss_g.backward()
-#                 # for name, param in self.dis_models['transfer'].named_parameters():
-#                 #     if param.grad is not None:
-#                 #         print(f"{name}: {param.grad.norm()}")
-#                 for optimizer in self.g_optimizers.values():
-#                     #加入梯度裁剪
-#                     torch.nn.utils.clip_grad_norm_(self.dis_models['transfer'].module.parameters(), 1.0)
-#                     optimizer.step()
-#                     optimizer.zero_grad()
-#                 for optimizer in self.d_optimizers.values():
-#                     optimizer.zero_grad()
-#                 losses_d = self.d_full(d, d_c, swap_canonical, swap_origin, x_can, x_ori)#真实结果， 换脸结果， 换脸的kp
-#                 loss_d = sum(losses_d.values())
-#                 loss_d.backward()
-#                 for optimizer in self.d_optimizers.values():
-#                     optimizer.step()
-#                     optimizer.zero_grad()
-#                 self.log_iter(to_cpu(losses_g), to_cpu(losses_d))
-#                 if is_master():
-#                     progress_bar.update(len(d))
-#                 self.steps += 1
-#                 if self.steps % 200 == 0:
-#                     self.log_times([d_id, d, d_c, swap_canonical, swap_origin, swap_origin_re], mask)
-
-#         # 调用学习率调度器
-#         for scheduler in self.g_schedulers.values():
-#             scheduler.step()
-#         for scheduler in self.d_schedulers.values():
-#             scheduler.step()
-
-#         self.save_check()
-#         self.epoch += 1
-
-# class Visualizer:
-#     def __init__(self, kp_size=5, draw_border=False, colormap="gist_rainbow"):
-#         self.kp_size = kp_size
-#         self.draw_border = draw_border
-#         self.colormap = plt.get_cmap(colormap)
-
-#     def draw_image_with_kp(self, image, kp_array):
-#         image = np.copy(image)
-#         spatial_size = np.array(image.shape[:2][::-1])[np.newaxis]
-#         kp_array = spatial_size * (kp_array + 1) / 2
-#         num_kp = kp_array.shape[0]
-#         for kp_ind, kp in enumerate(kp_array):
-#             # rr, cc = circle(kp[1], kp[0], self.kp_size, shape=image.shape[:2])
-#             rr, cc = disk((kp[0], kp[1]), self.kp_size, shape=image.shape[:2])
-#             image[rr, cc] = np.array(self.colormap(kp_ind / num_kp))[:3]
-#         return image
-
-#     def create_image_column_with_kp(self, images, kp):
-#         image_array = np.array([self.draw_image_with_kp(v, k) for v, k in zip(images, kp)])
-#         return self.create_image_column(image_array)
-
-#     def create_image_column(self, images):
-#         if self.draw_border:
-#             images = np.copy(images)
-#             images[:, :, [0, -1]] = (1, 1, 1)
-#             images[:, :, [0, -1]] = (1, 1, 1)
-#         return np.concatenate(list(images), axis=0)
-
-#     def create_image_grid(self, *args):
-#         out = []
-#         for arg in args:
-#             if type(arg) == tuple:
-#                 out.append(self.create_image_column_with_kp(arg[0], arg[1]))
-#             else:
-#                 out.append(self.create_image_column(arg))
-#         return np.concatenate(out, axis=1)
-
-#     def visualize(self, s, d, generated_d, transformed_d, kp_s, kp_d, transformed_kp, occlusion):
-#         images = []
-#         # Source image with keypoints
-#         source = s.data.cpu()
-#         kp_source = kp_s.data.cpu().numpy()[:, :, :2]
-#         source = np.transpose(source, [0, 2, 3, 1])
-#         images.append((source, kp_source))
-
-#         # Equivariance visualization
-#         transformed = transformed_d.data.cpu().numpy()
-#         transformed = np.transpose(transformed, [0, 2, 3, 1])
-#         transformed_kp = transformed_kp.data.cpu().numpy()[:, :, :2]
-#         images.append((transformed, transformed_kp))
-
-#         # Driving image with keypoints
-#         kp_driving = kp_d.data.cpu().numpy()[:, :, :2]
-#         driving = d.data.cpu().numpy()
-#         driving = np.transpose(driving, [0, 2, 3, 1])
-#         images.append((driving, kp_driving))
-
-#         # Result with and without keypoints
-#         prediction = generated_d.data.cpu().numpy()
-#         prediction = np.transpose(prediction, [0, 2, 3, 1])
-#         images.append(prediction)
-
-#         # Occlusion map
-#         occlusion_map = occlusion.data.cpu().repeat(1, 3, 1, 1)
-#         occlusion_map = F.interpolate(occlusion_map, size=source.shape[1:3]).numpy()
-#         occlusion_map = np.transpose(occlusion_map, [0, 2, 3, 1])
-#         images.append(occlusion_map)
-
-#         image = self.create_image_grid(*images)
-#         image = image.clip(0, 1)
-#         image = (255 * image).astype(np.uint8)
-#         return image
-
-#     def visualize_swap(self, result, mask=None):
-#         images = []
-#         for image_g in result:
-#             image_g = image_g.data.cpu().numpy()
-#             image_g = np.transpose(image_g, [0, 2, 3, 1])
-#             images.append(image_g)
-
-#         if mask is not None:
-#             with torch.no_grad():
-#                 for mask_g in mask:
-#                     mask_g = F.interpolate(mask_g, size=(256, 256))
-#                     mask_g = mask_g.repeat(1, 3, 1, 1)
-#                     mask_g = mask_g.data.cpu().numpy()
-#                     mask_g = np.transpose(mask_g, [0, 2, 3, 1])
-#                     images.append(mask_g)
-#         # driving = d_id.data.cpu().numpy()
-#         # driving = np.transpose(driving, [0, 2, 3, 1])
-#         # images.append(driving)
-
-#         # driving = d.data.cpu().numpy()
-#         # driving = np.transpose(driving, [0, 2, 3, 1])
-#         # images.append(driving)
-
-#         # driving = d_c.data.cpu().numpy()
-#         # driving = np.transpose(driving, [0, 2, 3, 1])
-#         # images.append(driving)
-
-#         # driving = recon_canonical.data.cpu().numpy()
-#         # driving = np.transpose(driving, [0, 2, 3, 1])
-#         # images.append(driving)
-#         # driving = swap_res.data.cpu().numpy()
-#         # driving = np.transpose(driving, [0, 2, 3, 1])
-#         # images.append(driving)
-
-#         # prediction = swap_canonical.data.cpu().numpy()
-#         # prediction = np.transpose(prediction, [0, 2, 3, 1])
-#         # images.append(prediction)
-
-#         # prediction = swap_origin.data.cpu().numpy()
-#         # prediction = np.transpose(prediction, [0, 2, 3, 1])
-#         # images.append(prediction)
-
-#         image = self.create_image_grid(*images)
-#         image = image.clip(0, 1)
-#         image = (255 * image).astype(np.uint8)
-#         return image
