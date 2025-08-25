@@ -249,7 +249,7 @@ class CanSwapPipeline(object):
         if flag_is_driving_video:
             log(f"The animated video consists of {n_frames} frames.")
         else:
-            log(f"The output of image-driven portrait animation is an image.")
+            log(f"The output is an image.")
 
         # 准备source mask用于贴回
         source_mask_proc, _ = self.soft_mask(source_mask.unsqueeze(0).unsqueeze(0))
@@ -360,8 +360,8 @@ class CanSwapPipeline(object):
             # 最终日志
             if wfp_template not in (None, ''):
                 log(f'Animated template: {wfp_template}, you can specify `-d` argument with this template path next time to avoid cropping video, motion making and protecting privacy.', style='bold green')
-            log(f'Animated video: {wfp}')
-            log(f'Animated video with concat: {wfp_concat}')
+            log(f'Results: {wfp}')
+            log(f'Results with concat: {wfp_concat}')
         else:
             wfp_concat = osp.join(args.output_dir, f'{basename(args.source)}--{basename(args.driving)}_concat.jpg')
             cv2.imwrite(wfp_concat, frames_concatenated[0][..., ::-1])
@@ -369,7 +369,7 @@ class CanSwapPipeline(object):
             # wfp = args.outpath
             cv2.imwrite(wfp, I_p_pstbk_lst[0][..., ::-1])
             # 最终日志
-            log(f'Animated image: {wfp}')
-            log(f'Animated image with concat: {wfp_concat}')
+            log(f'Results: {wfp}')
+            log(f'Results with concat: {wfp_concat}')
 
         return wfp, wfp_concat
