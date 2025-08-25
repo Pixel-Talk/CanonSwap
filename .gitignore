@@ -13,6 +13,7 @@ __pycache__/
 assets/
 pretrained_weights/
 animations/
+results/
 
 # Ipython notebook
 *.ipynb
