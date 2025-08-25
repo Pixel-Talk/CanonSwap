@@ -48,8 +48,8 @@ class CanSwapPipeline(object):
         # visualizer_params={"kp_size": 5, "draw_border": True, "colormap": "gist_rainbow"}
         # self.visualizer = Visualizer(**visualizer_params)
 
-        self.image_processor = SegformerImageProcessor.from_pretrained("pretrained_weights/parsing", local_files_only=True)
-        self.model = SegformerForSemanticSegmentation.from_pretrained("pretrained_weights/parsing",local_files_only=True).to(self.can_swapper.device)
+        self.image_processor = SegformerImageProcessor.from_pretrained("jonathandinu/face-parsing")
+        self.model = SegformerForSemanticSegmentation.from_pretrained("jonathandinu/face-parsing").to(self.can_swapper.device)
         self.valid_list = [1, 2, 4, 5, 6, 7, 10, 11, 12]
         self.valid_list = torch.tensor(self.valid_list, device=self.can_swapper.device)
 
