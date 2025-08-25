@@ -77,7 +77,7 @@ python inference_canswap.py -s <source_image_path> -t <target_video/image_path>
 
 ### Video-to-Image Swap
 ```bash
-python inference_canswap_e2e.py -s <target_image_path> -d <source_video/image_path>
+python inference_canswap_e2e.py -s <target_image_path> -t <source_video/image_path>
 ```
 
 ## Citation
