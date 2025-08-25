@@ -95,4 +95,4 @@ If you find this work useful, please cite:
 
 ## Acknowledgments
 
-This project is based on [LivePortrait](https://github.com/KwaiVGI/LivePortrait). We thank the authors for their excellent work in efficient portrait animation with stitching and retargeting control.
+This project is based on [LivePortrait](https://github.com/KwaiVGI/LivePortrait). We thank the authors for their excellent work in efficient portrait animation.
