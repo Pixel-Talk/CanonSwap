@@ -72,12 +72,12 @@ CanonSwap/
 The first inference run will automatically download the face parsing model.
 ### Face Swapping
 ```bash
-python inference_canswap.py -s <source_image_path> -t <target_video/image_path>
+python inference_canswap.py -s examples/source.jpeg -t examples/target.mp4
 ```
 
 ### Video-to-Image Swap
 ```bash
-python inference_canswap_e2e.py -s <target_image_path> -t <source_video/image_path>
+python inference_v2i.py -s examples/i2v_s.jpeg -t examples/i2v_t.mov
 ```
 
 ## Citation
