@@ -74,6 +74,7 @@ The first inference run will automatically download the face parsing model.
 ```bash
 python inference_canswap.py -s examples/source.jpeg -t examples/target.mp4
 ```
+This also supports image-to-image swapping.
 
 ### Video-to-Image Swap
 ```bash
