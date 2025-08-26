@@ -83,7 +83,7 @@ python inference_v2i.py -s examples/i2v_s.jpeg -t examples/i2v_t.mov
 
 ## Citation
 
-If you find this work useful, please cite:
+If you find this work useful, please star and cite:
 
 ```bibtex
 @article{luo2025canonswap,
@@ -93,6 +93,7 @@ If you find this work useful, please cite:
    year={2025}
 }
 ```
+It is the greatest appreciation of our work!
 
 ## Attention
 This project is for technical and academic use only. Please do not apply it to illegal and unethical scenarios.
