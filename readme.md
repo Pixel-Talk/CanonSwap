@@ -94,6 +94,10 @@ If you find this work useful, please cite:
 }
 ```
 
+## Attention
+This project is for technical and academic use only. Please do not apply it to illegal and unethical scenarios.
+In the event of violation of the legal and ethical requirements of the user's country or region, this coderepository is exempt from liability.
+
 ## Acknowledgments
 
 This project is based on [LivePortrait](https://github.com/KwaiVGI/LivePortrait). We thank the authors for their excellent work in efficient portrait animation.
