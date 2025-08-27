@@ -78,9 +78,9 @@ class can_swapper(object):
 
         self.timer = Timer()
 
-        #加载ID extractor
+        #load ID extractor
         netArc = "pretrained_weights/arcface_checkpoint.tar"
-        self.netArc = torch.load(netArc, map_location=torch.device("cpu"))
+        self.netArc = torch.load(netArc, map_location=torch.device("cpu"), weights_only = False)
         self.netArc.cuda()
         self.netArc.eval()
 
