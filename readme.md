@@ -99,7 +99,7 @@ It is the greatest appreciation of our work!
 This project is licensed under the Research Responsible AI License (ResearchRAIL-M). A full copy of the license can be found in the LICENSE file.
 By using this code or model, you agree to the terms outlined in the license.
 This project is intended for technical and academic purposes only. You are strictly prohibited from using this project for any illegal or unethical applications, including but not limited to creating non-consensual content, spreading misinformation, or harassing individuals. Please see the Use-Based Restrictions in the license for a non-exhaustive list of prohibited uses.
-The authors and copyright holders are exempt from any liability arising from your violation of these terms.
+The authors are exempt from any liability arising from your violation of these terms.
 
 ## Acknowledgments
 
